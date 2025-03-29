@@ -32,32 +32,19 @@ class App(customtkinter.CTk):
 
     def build_title_screen(self):
         """Builds the title screen UI."""
-        label = customtkinter.CTkLabel(self.title_screen, text="TITLE SCREEN", font=("Arial", 24))
-        label.pack(pady=20)
-
         # Add background
         current_dir = os.path.dirname(__file__)
+        size = (self.winfo_screenwidth(), self.winfo_screenheight())
         bg_image_path = os.path.join(current_dir, "../assets/images/background.png")
-        bg_image = Image.open(bg_image_path)
-        resized_bg = bg_image.resize((self.winfo_screenwidth(), self.winfo_screenheight()))
-        bg_ctk_image = customtkinter.CTkImage(resized_bg)
+        bg_image = customtkinter.CTkImage(light_image=Image.open(bg_image_path), size=size)
 
-        bg_label = customtkinter.CTkLabel(self, image=bg_ctk_image, text="")
-        bg_label.place(relwidth=1, relheight=1)  # Fill entire window
 
-        # Load images using CTkImage
-        # raccoon_path = os.path.join(current_dir, "../assets/images/raccoon_sprite.png")
-        # bear_path = os.path.join(current_dir, "../assets/images/bear_sprite.png")
-        # raccoon_image = customtkinter.CTkImage(light_image=Image.open(raccoon_path), size=(200, 150))
-        # bear_image = customtkinter.CTkImage(light_image=Image.open(bear_path), size=(200, 150))
-        #
-        # # Add raccoon image
-        # raccoon_label = customtkinter.CTkLabel(self, image=raccoon_image, text="")
-        # raccoon_label.grid(row=1, column=0, sticky="w", padx=(50, 0))  # Align left
-        #
-        # # Add bear image
-        # bear_label = customtkinter.CTkLabel(self, image=bear_image, text="")
-        # bear_label.grid(row=1, column=0, sticky="e", padx=(0, 50))  # Align right
+        bg_label = customtkinter.CTkLabel(self, image=bg_image, text="")
+        bg_label.place(relx=0.5, rely=0.5, anchor="center", relwidth=1, relheight=1)
+
+        # Add title
+        label = customtkinter.CTkLabel(self.title_screen, text="TITLE SCREEN", font=("Arial", 24))
+        label.pack(pady=20)
 
         start_button = customtkinter.CTkButton(
             self.title_screen, text="Start Game", command=lambda: self.show_frame(self.pause_menu)
