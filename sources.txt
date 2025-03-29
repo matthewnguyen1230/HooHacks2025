@@ -1,0 +1,1 @@
+https://www.kaggle.com/datasets/vignonantoine/mediapipe-processed-asl-dataset/data used for its images with hand landmarks on ASL letters A-Z
