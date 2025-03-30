@@ -62,7 +62,7 @@ class Square:
                 self.frame_index = (self.frame_index + 1) % len(self.frames)
                 self.last_frame_time = current_time
             screen.blit(self.frames[self.frame_index], self.rect)
-        text = self.font.render(self.letter, True, (0, 0, 0))  # Black text on top of image
+        text = self.font.render(self.letter, True, (0, 0, 0))  # White text on top of image
         text_rect = text.get_rect(center=self.rect.center)
         screen.blit(text, text_rect)
 
@@ -166,38 +166,43 @@ def main():
                     lives = 3
                     background_index = 0
                     menu.main(load_high_score())
-            elif event.type == spawn_timer and not game_over:
-                side = random.choice(['top', 'bottom', 'left', 'right'])
-                letter = random.choice(LETTERS)
-                if side == 'top':
-                    square_frames = bear_frames if random.random() < 0.5 else raccoon_frames
-                    square = Square(random.randint(0, WIDTH - 200),
-                                    0,
-                                    letter,
-                                    speed,
-                                    frames=square_frames)
-                elif side == 'bottom':
-                    square_frames = bear_frames if random.random() < 0.5 else raccoon_frames
-                    square = Square(random.randint(0, WIDTH - 200),
-                                    HEIGHT - 200,
-                                    letter,
-                                    speed,
-                                    frames=square_frames)
-                elif side == 'left':
-                    square_frames = bear_frames if random.random() < 0.5 else raccoon_frames
-                    square = Square(0,
-                                    random.randint(0, HEIGHT - 200),
-                                    letter,
-                                    speed,
-                                    frames=square_frames)
-                elif side == 'right':
-                    square_frames = bear_frames if random.random() < 0.5 else raccoon_frames
-                    square = Square(WIDTH - 200,
-                                    random.randint(0, HEIGHT - 200),
-                                    letter,
-                                    speed,
-                                    frames=square_frames)
-                squares.append(square)
+
+            spawn_delay = 1500  # 1.5 seconds
+            current_time = pygame.time.get_ticks()
+
+            if current_time - start_time >= spawn_delay:
+                if event.type == spawn_timer and not game_over:
+                    side = random.choice(['top', 'bottom', 'left', 'right'])
+                    letter = random.choice(LETTERS)
+                    if side == 'top':
+                        square_frames = bear_frames if random.random() < 0.5 else raccoon_frames
+                        square = Square(random.randint(0, WIDTH - 200),
+                                        0,
+                                        letter,
+                                        speed,
+                                        frames=square_frames)
+                    elif side == 'bottom':
+                        square_frames = bear_frames if random.random() < 0.5 else raccoon_frames
+                        square = Square(random.randint(0, WIDTH - 200),
+                                        HEIGHT - 200,
+                                        letter,
+                                        speed,
+                                        frames=square_frames)
+                    elif side == 'left':
+                        square_frames = bear_frames if random.random() < 0.5 else raccoon_frames
+                        square = Square(0,
+                                        random.randint(0, HEIGHT - 200),
+                                        letter,
+                                        speed,
+                                        frames=square_frames)
+                    elif side == 'right':
+                        square_frames = bear_frames if random.random() < 0.5 else raccoon_frames
+                        square = Square(WIDTH - 200,
+                                        random.randint(0, HEIGHT - 200),
+                                        letter,
+                                        speed,
+                                        frames=square_frames)
+                    squares.append(square)
 
         if not game_over:
             screen.blit(background_images[background_index], (0, 0))
@@ -240,14 +245,14 @@ def main():
                         game_over = False
                         squares = []
                         score = 0
-                        speed = 1
+                        square.speed = 1
                         lives = 3
                         background_index = 0
                     if event.key == pygame.K_BACKSPACE:
                         game_over = False
                         squares = []
                         score = 0
-                        speed = 1
+                        square.speed = 1
                         lives = 3
                         background_index = 0
                         menu.main(load_high_score())

@@ -87,9 +87,27 @@ def main(high_score=0):
         # Start button interaction
         start_button.check_hover(mouse_pos)
         if start_button.is_clicked(mouse_pos, mouse_click):
-            print("Game")
-            HandGestureGame.main()  # Game start function
 
+            print("Game")
+
+            loading_font = pygame.font.Font("../fonts/WildFont.ttf", 48)
+            loading_text = loading_font.render("Loading...", True, WHITE)
+            loading_rect = loading_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+
+            # Fill background
+            screen.blit(background, (0, 0))
+
+            # Display loading text
+            screen.blit(loading_text, loading_rect)
+
+            # Update display to show loading text
+            pygame.display.flip()
+
+            # Add a small delay to ensure the text is visible
+            pygame.time.delay(500)  # Adjust the delay as needed
+
+            # Start the game
+            HandGestureGame.main()  # Game start function
 
         # Fill background
         screen.blit(background, (0, 0))
