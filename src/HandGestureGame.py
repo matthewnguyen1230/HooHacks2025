@@ -42,7 +42,7 @@ for i in range(1, 4):  # Load background_001 to background_003
 
 # Scale the images to fit the game window or desired size
 background_image_scaled = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
-enemy_size = 200  # Adjusted size for scaled frames
+enemy_size = 210  # Adjusted size for scaled frames
 
 class Square:
     def __init__(self, x, y, letter, speed=1, frames=None):
@@ -100,12 +100,11 @@ def draw_restart_screen(score):
     restart_rect = restart_text.get_rect(center=(600, 400))
     screen.blit(restart_text, restart_rect)
 
-    reset_text = font.render("Press BACKSPACE to Restart", True, (255, 255, 255))
+    reset_text = font.render("Press BACKSPACE to go to Menu", True, (255, 255, 255))
     reset_rect = reset_text.get_rect(center=(600, 500))
     screen.blit(reset_text, reset_rect)
 
     pygame.display.flip()
-
 
 def main():
     clock = pygame.time.Clock()
@@ -118,6 +117,7 @@ def main():
     lives = 3
     background_index = 0
     game_over = False
+    start_time = pygame.time.get_ticks()  # Record the start time
 
     running = True
     while running:
@@ -173,10 +173,12 @@ def main():
                     if square.letter == result:
                         squares.remove(square)
                         score += 1
-                        if score % 10 == 0:
-                            speed += 1
+
+            # Gradually increase speed over time
+            speed += 0.0015  # Increase speed by a small amount every second
 
             for square in squares[:]:
+                square.speed = speed  # Update square speed
                 square.draw()
                 square.move()
                 if square.rect.collidepoint(WIDTH // 2, HEIGHT // 2):
