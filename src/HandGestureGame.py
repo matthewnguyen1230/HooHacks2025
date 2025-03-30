@@ -7,81 +7,196 @@ from HandGestureRecognizer import HandGestureRecognizer
 pygame.init()
 
 # Set up some constants
-WIDTH, HEIGHT = 800, 600
+WIDTH, HEIGHT = 1200, 800
 WHITE = (255, 255, 255)
-RED = (255, 0, 0)
-BLACK = (0, 0, 0)
 LETTERS = ['A', 'B', 'C', 'D', 'E', 'F']
 
 # Set up the display
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
+# Load bear frames
+bear_frames = []
+for i in range(1, 5):  # Adjust the range based on the number of frames
+    frame_path = f"../images/bear_{i:03d}.png"
+    frame = pygame.image.load(frame_path)
+    scaled_frame = pygame.transform.scale(frame, (200, 200))  # Scale to 200x200 size
+    bear_frames.append(scaled_frame)
+
+# Load raccoon frames
+raccoon_frames = []
+for i in range(1, 5):  # Adjust the range based on the number of frames
+    frame_path = f"../images/raccoon_{i:03d}.png"
+    frame = pygame.image.load(frame_path)
+    scaled_frame = pygame.transform.scale(frame, (200, 200))  # Scale to 200x200 size
+    raccoon_frames.append(scaled_frame)
+
+# Load tent image
+try:
+    tent_image = pygame.image.load("../images/tent.png")
+except Exception as e:
+    print(f"Error loading tent.png: {e}")
+    sys.exit()
+
+# Load background image
+try:
+    background_image = pygame.image.load("../images/background.png")
+except Exception as e:
+    print(f"Error loading background.png: {e}")
+    sys.exit()
+
+# Scale the images to fit the game window or desired size
+background_image_scaled = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
+enemy_size = 200  # Adjusted size for scaled frames
+
+# Scale the tent image
+tent_image_scaled = pygame.transform.scale(tent_image, (300, 300))  # Larger tent image
+
 class Square:
-    def __init__(self, x, y, letter):
-        self.rect = pygame.Rect(x, y, 50, 50)
+    def __init__(self, x, y, letter, speed=1, frames=None):
+        self.rect = pygame.Rect(x, y, enemy_size, enemy_size)  # Adjusted rectangle size
         self.letter = letter
+        self.speed = speed
+        self.frames = frames
+        self.frame_index = 0
+        self.last_frame_time = pygame.time.get_ticks()
 
     def draw(self):
-        pygame.draw.rect(screen, RED, self.rect)
-        font = pygame.font.Font(None, 36)
-        text = font.render(self.letter, True, BLACK)
+        if self.frames:
+            current_time = pygame.time.get_ticks()
+            if current_time - self.last_frame_time >= 200:  # Change frame every 200 milliseconds
+                self.frame_index = (self.frame_index + 1) % len(self.frames)
+                self.last_frame_time = current_time
+            screen.blit(self.frames[self.frame_index], self.rect)
+        else:
+            # If no frames are provided, use a default image (not needed here since we're using frames)
+            pass
+        font = pygame.font.Font(None, 64)  # Larger font size for letters
+        text = font.render(self.letter, True, (0, 0, 0))  # Black text on top of image
         text_rect = text.get_rect(center=self.rect.center)
         screen.blit(text, text_rect)
 
     def move(self):
         if self.rect.x < WIDTH / 2:
-            self.rect.x += 1
+            self.rect.x += self.speed
         elif self.rect.x > WIDTH / 2:
-            self.rect.x -= 1
+            self.rect.x -= self.speed
         if self.rect.y < HEIGHT / 2:
-            self.rect.y += 1
+            self.rect.y += self.speed
         elif self.rect.y > HEIGHT / 2:
-            self.rect.y -= 1
+            self.rect.y -= self.speed
+
+def draw_restart_screen(score):
+    # Load game over screen background
+    try:
+        game_over_background = pygame.image.load("../images/game_over_screen.png")
+        game_over_background_scaled = pygame.transform.scale(game_over_background, (1200, 800))
+    except Exception as e:
+        print(f"Error loading game_over_screen.png: {e}")
+        screen.fill((255, 255, 255))  # Default white background if image fails to load
+    else:
+        screen.blit(game_over_background_scaled, (0, 0))
+
+    font = pygame.font.Font(None, 72)
+    text = font.render("Aww shucks! Your tent got rummaged!", True, (0, 0, 0))
+    text_rect = text.get_rect(center=(600, 300))
+    screen.blit(text, text_rect)
+    score_text = font.render(f"Final Score: {score}", True, (0, 0, 0))
+    score_rect = score_text.get_rect(center=(600, 400))
+    screen.blit(score_text, score_rect)
+    restart_text = font.render("Press Space to Restart", True, (0, 0, 0))
+    restart_rect = restart_text.get_rect(center=(600, 500))
+    screen.blit(restart_text, restart_rect)
+    pygame.display.flip()
 
 def main():
     clock = pygame.time.Clock()
     recognizer = HandGestureRecognizer()
     squares = []
     spawn_timer = pygame.USEREVENT + 1
-    pygame.time.set_timer(spawn_timer, 5000)  # Spawn every second
-    start_time = pygame.time.get_ticks()
+    pygame.time.set_timer(spawn_timer, 1000)  # Spawn every second
+    score = 0
+    speed = 1
+    game_over = False
 
     running = True
     while running:
-        for event in pygame.event.get():  # Use pygame.event.get()
+        for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            elif event.type == spawn_timer:
-                if pygame.time.get_ticks() - start_time < 30000:  # 30 seconds
-                    side = random.choice(['top', 'bottom', 'left', 'right'])
-                    letter = random.choice(LETTERS)
-                    if side == 'top':
-                        square = Square(random.randint(0, WIDTH - 50), 0, letter)
-                    elif side == 'bottom':
-                        square = Square(random.randint(0, WIDTH - 50), HEIGHT - 50, letter)
-                    elif side == 'left':
-                        square = Square(0, random.randint(0, HEIGHT - 50), letter)
-                    elif side == 'right':
-                        square = Square(WIDTH - 50, random.randint(0, HEIGHT - 50), letter)
-                    squares.append(square)
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE and game_over:
+                    game_over = False
+                    squares = []
+                    score = 0
+                    speed = 1
+            elif event.type == spawn_timer and not game_over:
+                side = random.choice(['top', 'bottom', 'left', 'right'])
+                letter = random.choice(LETTERS)
+                if side == 'top':
+                    if random.random() < 0.5:
+                        square = Square(random.randint(0, WIDTH - enemy_size), 0, letter, speed, frames=bear_frames)
+                    else:
+                        square = Square(random.randint(0, WIDTH - enemy_size), 0, letter, speed, frames=raccoon_frames)
+                elif side == 'bottom':
+                    if random.random() < 0.5:
+                        square = Square(random.randint(0, WIDTH - enemy_size), HEIGHT - enemy_size, letter, speed, frames=bear_frames)
+                    else:
+                        square = Square(random.randint(0, WIDTH - enemy_size), HEIGHT - enemy_size, letter, speed, frames=raccoon_frames)
+                elif side == 'left':
+                    if random.random() < 0.5:
+                        square = Square(0, random.randint(0, HEIGHT - enemy_size), letter, speed, frames=bear_frames)
+                    else:
+                        square = Square(0, random.randint(0, HEIGHT - enemy_size), letter, speed, frames=raccoon_frames)
+                elif side == 'right':
+                    if random.random() < 0.5:
+                        square = Square(WIDTH - enemy_size, random.randint(0, HEIGHT - enemy_size), letter, speed, frames=bear_frames)
+                    else:
+                        square = Square(WIDTH - enemy_size, random.randint(0, HEIGHT - enemy_size), letter, speed, frames=raccoon_frames)
+                squares.append(square)
 
-        screen.fill(WHITE)
-        pygame.draw.circle(screen, BLACK, (WIDTH // 2, HEIGHT // 2), 50)
+        if not game_over:
+            # Draw the background image first
+            screen.blit(background_image_scaled, (0, 0))
 
-        result = recognizer.recognize_gesture()
-        if result:
-            for square in squares[:]:
-                if square.letter == result:
-                    squares.remove(square)
+            # Draw the tent image in the center of the screen
+            screen.blit(tent_image_scaled,
+                        (WIDTH // 2 - tent_image_scaled.get_width() // 2,
+                         HEIGHT // 2 - tent_image_scaled.get_height() // 2))
 
-        for square in squares:
-            square.draw()
-            square.move()
-            if square.rect.collidepoint(WIDTH // 2, HEIGHT // 2):
-                print("Game Over!")
-                running = False
+            result = recognizer.recognize_gesture()
+            if result:
+                for square in squares[:]:
+                    if square.letter == result:
+                        squares.remove(square)
+                        score += 1
+                        if score % 10 == 0:
+                            speed += 1
 
-        pygame.display.flip()
+            for square in squares:
+                square.draw()
+                square.move()
+                if square.rect.collidepoint(WIDTH // 2, HEIGHT // 2):
+                    print("Game Over!")
+                    game_over = True
+
+            # Draw score
+            font = pygame.font.Font(None, 36)
+            score_text = font.render(f"Score: {score}", True, (0, 0, 0))
+            screen.blit(score_text, (10, 10))
+
+            pygame.display.flip()
+        else:
+            draw_restart_screen(score)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        game_over = False
+                        squares = []
+                        score = 0
+                        speed = 1
+
         clock.tick(60)
 
     pygame.quit()
