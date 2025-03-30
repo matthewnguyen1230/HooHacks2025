@@ -17,7 +17,7 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 # Load bear frames
 bear_frames = []
 for i in range(1, 5):  # Adjust the range based on the number of frames
-    frame_path = f"../images/bear_{i:03d}.png"
+    frame_path = f"../images/BearShadow_{i:03d}.png"
     frame = pygame.image.load(frame_path)
     scaled_frame = pygame.transform.scale(frame, (200, 200))  # Scale to 200x200 size
     bear_frames.append(scaled_frame)
@@ -25,7 +25,7 @@ for i in range(1, 5):  # Adjust the range based on the number of frames
 # Load raccoon frames
 raccoon_frames = []
 for i in range(1, 5):  # Adjust the range based on the number of frames
-    frame_path = f"../images/raccoon_{i:03d}.png"
+    frame_path = f"../images/RaccoonShadow_{i:03d}.png"
     frame = pygame.image.load(frame_path)
     scaled_frame = pygame.transform.scale(frame, (200, 200))  # Scale to 200x200 size
     raccoon_frames.append(scaled_frame)
@@ -42,7 +42,7 @@ for i in range(1, 4):  # Load background_001 to background_003
 
 # Scale the images to fit the game window or desired size
 background_image_scaled = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
-enemy_size = 210  # Adjusted size for scaled frames
+enemy_size = 225  # Adjusted size for scaled frames
 
 class Square:
     def __init__(self, x, y, letter, speed=1, frames=None):
@@ -88,6 +88,15 @@ def draw_restart_screen(score):
         screen.blit(game_over_background_scaled, (0, 0))
 
     font = pygame.font.Font("../fonts/WildFont.ttf", 38)  # Use custom font for restart screen text
+    high_score = load_high_score()
+    if score > high_score:
+        high_score_text = font.render(f"NEW HIGH SCORE!", True, (124, 252, 0))
+    else:
+        high_score_text = font.render(f"High Score: {high_score}", True, (255, 255, 255))
+
+    high_score_rect = high_score_text.get_rect(center=(600, 350))
+    screen.blit(high_score_text, high_score_rect)
+
     text = font.render("Aww shucks! Your tent got rummaged!", True, (255, 255, 255))
     text_rect = text.get_rect(center=(600, 200))
     screen.blit(text, text_rect)
@@ -105,6 +114,19 @@ def draw_restart_screen(score):
     screen.blit(reset_text, reset_rect)
 
     pygame.display.flip()
+
+import json
+
+def load_high_score():
+    try:
+        with open('high_score.json', 'r') as file:
+            return json.load(file)['high_score']
+    except FileNotFoundError:
+        return 0
+
+def save_high_score(score):
+    with open('high_score.json', 'w') as file:
+        json.dump({'high_score': score}, file)
 
 def main():
     clock = pygame.time.Clock()
@@ -132,6 +154,15 @@ def main():
                     speed = 1
                     lives = 3
                     background_index = 0
+                elif event.key == pygame.K_BACKSPACE and game_over:
+                    # Reset game state and return to main menu
+                    game_over = False
+                    squares = []
+                    score = 0
+                    speed = 1
+                    lives = 3
+                    background_index = 0
+                    # TODO Add any additional reset logic here if needed
             elif event.type == spawn_timer and not game_over:
                 side = random.choice(['top', 'bottom', 'left', 'right'])
                 letter = random.choice(LETTERS)
@@ -175,7 +206,7 @@ def main():
                         score += 1
 
             # Gradually increase speed over time
-            speed += 0.0015  # Increase speed by a small amount every second
+            speed += 0.0012  # Increase speed by a small amount every second
 
             for square in squares[:]:
                 square.speed = speed  # Update square speed
