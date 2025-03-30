@@ -127,7 +127,7 @@ class HandGestureRecognizer:
         else:
             result = "No hands detected"
 
-        cv2.imshow("Image", img)
+        # cv2.imshow("Image", img)
         cv2.waitKey(1)
 
         return result
