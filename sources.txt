@@ -1,1 +1,2 @@
-https://www.kaggle.com/datasets/vignonantoine/mediapipe-processed-asl-dataset/data used for its images with hand landmarks on ASL letters A-Z
+https://github.com/gurkirat20/Sign_Language_Detection
++ American Sign Language detection used for main component of game.

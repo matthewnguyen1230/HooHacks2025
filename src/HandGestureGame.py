@@ -14,6 +14,13 @@ LETTERS = ['A', 'B', 'C', 'D', 'E', 'F']
 # Set up the display
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
+# Load HighMount font
+try:
+    highmount_font = pygame.font.Font("../fonts/HighMount.ttf", 36)
+except Exception as e:
+    print(f"Error loading HighMount font: {e}")
+    highmount_font = pygame.font.Font(None, 36)  # Default font if HighMount font fails to load
+
 # Load bear frames
 bear_frames = []
 for i in range(1, 5):  # Adjust the range based on the number of frames
@@ -52,7 +59,7 @@ enemy_size = 200  # Adjusted size for scaled frames
 tent_image_scaled = pygame.transform.scale(tent_image, (300, 300))  # Larger tent image
 
 class Square:
-    def __init__(self, x, y, letter, speed=1, frames=None):
+    def __init__(self, x, y, letter, speed=0.75, frames=None):
         self.rect = pygame.Rect(x, y, enemy_size, enemy_size)  # Adjusted rectangle size
         self.letter = letter
         self.speed = speed
@@ -70,10 +77,9 @@ class Square:
         else:
             # If no frames are provided, use a default image (not needed here since we're using frames)
             pass
-        font = pygame.font.Font(None, 64)  # Larger font size for letters
-        text = font.render(self.letter, True, (0, 0, 0))  # Black text on top of image
-        text_rect = text.get_rect(center=self.rect.center)
-        screen.blit(text, text_rect)
+        letter_text = highmount_font.render(self.letter, True, (0, 0, 0))  # Black text on top of image
+        letter_rect = letter_text.get_rect(center=self.rect.center)
+        screen.blit(letter_text, letter_rect)
 
     def move(self):
         if self.rect.x < WIDTH / 2:
@@ -96,14 +102,13 @@ def draw_restart_screen(score):
     else:
         screen.blit(game_over_background_scaled, (0, 0))
 
-    font = pygame.font.Font(None, 72)
-    text = font.render("Aww shucks! Your tent got rummaged!", True, (0, 0, 0))
-    text_rect = text.get_rect(center=(600, 300))
-    screen.blit(text, text_rect)
-    score_text = font.render(f"Final Score: {score}", True, (0, 0, 0))
+    game_over_text = highmount_font.render("Aw shucks! Your tent got rummaged!", True, (255, 255, 255))
+    game_over_rect = game_over_text.get_rect(center=(600, 300))
+    screen.blit(game_over_text, game_over_rect)
+    score_text = highmount_font.render(f"Final Score: {score}", True, (255, 255, 255))
     score_rect = score_text.get_rect(center=(600, 400))
     screen.blit(score_text, score_rect)
-    restart_text = font.render("Press Space to Restart", True, (0, 0, 0))
+    restart_text = highmount_font.render("Press Space to Restart", True, (255, 255, 255))
     restart_rect = restart_text.get_rect(center=(600, 500))
     screen.blit(restart_text, restart_rect)
     pygame.display.flip()
@@ -113,9 +118,9 @@ def main():
     recognizer = HandGestureRecognizer()
     squares = []
     spawn_timer = pygame.USEREVENT + 1
-    pygame.time.set_timer(spawn_timer, 1000)  # Spawn every second
+    pygame.time.set_timer(spawn_timer, 2500)  # Spawn every second
     score = 0
-    speed = 1
+    speed = 0.75
     game_over = False
 
     running = True
@@ -180,8 +185,7 @@ def main():
                     game_over = True
 
             # Draw score
-            font = pygame.font.Font(None, 36)
-            score_text = font.render(f"Score: {score}", True, (0, 0, 0))
+            score_text = highmount_font.render(f"Score: {score}", True, (0, 0, 0))
             screen.blit(score_text, (10, 10))
 
             pygame.display.flip()

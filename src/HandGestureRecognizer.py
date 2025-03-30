@@ -1,8 +1,5 @@
 import cv2
-import time
-import os
 import HandTrackingModule as htm
-
 
 class HandGestureRecognizer:
     def __init__(self):
@@ -11,6 +8,8 @@ class HandGestureRecognizer:
         self.cap.set(4, self.hCam)
         self.cap.set(3, self.wCam)
         self.detector = htm.handDetector(detectionCon=0)
+        self.last_gesture = None
+        self.stable_frames = 0
 
     def recognize_gesture(self):
         success, img = self.cap.read()
@@ -59,67 +58,7 @@ class HandGestureRecognizer:
             elif (fingers.count(1) == 3) and (fingers[0] == 0) and (posList[3][2] > posList[4][2]):
                 result = "F"
 
-            # elif (fingers[0] == 0.25) and fingers.count(0) == 3:
-            #     result = "G"
-            #
-            # elif (fingers[0] == 0.25) and (fingers[1] == 0.25) and fingers.count(0) == 2:
-            #     result = "H"
-            #
-            # elif (posList[4][1] < posList[6][1]) and fingers.count(0) == 3:
-            #     if (len(fingers) == 4 and fingers[3] == 1):
-            #         result = "I"
-            #
-            # elif (posList[4][1] < posList[6][1] and posList[4][1] < posList[10][1] and fingers.count(1) == 2):
-            #     result = "K"
-            #
-            # elif (fingers[0] == 1) and fingers.count(0) == 3 and (posList[3][1] < posList[4][1]):
-            #     result = "L"
-            #
-            # elif (posList[4][1] < posList[16][1]) and fingers.count(0) == 4:
-            #     result = "M"
-            #
-            # elif (posList[4][1] < posList[12][1]) and fingers.count(0) == 4:
-            #     result = "N"
-            #
-            # elif (posList[4][1] > posList[12][1]) and posList[4][2] < posList[6][2] and fingers.count(0) == 4:
-            #     result = "T"
-            #
-            # elif (posList[4][1] > posList[12][1]) and posList[4][2] < posList[12][2] and fingers.count(0) == 4:
-            #     result = "S"
-            #
-            # elif (posList[4][2] < posList[8][2]) and (posList[4][2] < posList[12][2]) and (
-            #         posList[4][2] < posList[16][2]) and (posList[4][2] < posList[20][2]):
-            #     result = "O"
-            #
-            # elif (len(fingers) >= 3 and fingers[2] == 0) and (posList[4][2] < posList[12][2]) and (
-            #         posList[4][2] > posList[6][2]):
-            #     if (len(fingers) == 4 and fingers[3] == 0):
-            #         result = "P"
-
-            # elif (fingers[1] == 0) and (fingers[2] == 0) and (fingers[3] == 0) and (posList[8][2] > posList[5][2]) and (
-            #         posList[4][2] < posList[1][2]):
-            #     result = "Q"
-            #
-            # elif (posList[8][1] < posList[12][1]) and (fingers.count(1) == 2) and (posList[9][1] > posList[4][1]):
-            #     result = "R"
-
-            # elif (posList[4][1] < posList[6][1] and posList[4][1] < posList[10][1] and fingers.count(1) == 2 and
-            #       posList[3][2] > posList[4][2] and (posList[8][1] - posList[11][1]) <= 50):
-            #     result = "U"
-            #
-            # elif (posList[4][1] < posList[6][1] and posList[4][1] < posList[10][1] and fingers.count(1) == 2 and
-            #       posList[3][2] > posList[4][2]):
-            #     result = "V"
-
-            # elif (posList[4][1] < posList[6][1] and posList[4][1] < posList[10][1] and fingers.count(1) == 3):
-            #     result = "W"
-
-            # elif (fingers[0] == 0.5 and fingers.count(0) == 3 and posList[4][1] > posList[6][1]):
-            #     result = "X"
-            #
-            # elif (fingers.count(0) == 3) and (posList[3][1] < posList[4][1]):
-            #     if (len(fingers) == 4 and fingers[3] == 1):
-            #         result = "Y"
+            # ... other conditions ...
 
             cv2.rectangle(img, (28, 255), (178, 425), (0, 225, 0), cv2.FILLED)
             cv2.putText(img, str(result), (55, 400), cv2.FONT_HERSHEY_COMPLEX, 5, (255, 0, 0), 15)
@@ -127,10 +66,20 @@ class HandGestureRecognizer:
         else:
             result = "No hands detected"
 
+        # Introduce a delay by requiring stable frames
+        if result == self.last_gesture:
+            self.stable_frames += 1
+        else:
+            self.stable_frames = 0
+            self.last_gesture = result
+
+        if self.stable_frames >= 5:  # Require 5 stable frames
+            return result
+        else:
+            return "Unknown"
+
         # cv2.imshow("Image", img)
         cv2.waitKey(1)
-
-        return result
 
     def run(self):
         while True:
