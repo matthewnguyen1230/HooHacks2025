@@ -1,82 +1,106 @@
-import customtkinter
+import pygame
+import pygame.freetype
 import os
-from PIL import Image
-from numpy.ma.core import resize
+
+# Initialize pygame
+pygame.init()
+
+# Set up display
+WIDTH, HEIGHT = 1200, 800
+screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+pygame.display.set_caption("Sign of the Wild")
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+
+# Set up title
+current_dir = os.path.dirname(__file__)
+title_image_path = os.path.join(current_dir, "../assets/images/title.png")
+title_image = pygame.image.load(title_image_path)
+
+# Load the background image
+bg_image_path = os.path.join(current_dir, "../assets/images/title_background.png")
+background = pygame.image.load(bg_image_path)
+background = pygame.transform.scale(background, (WIDTH, HEIGHT))
+
+# Colors
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
 
 
-# Main Application Class
-class App(customtkinter.CTk):
-    def __init__(self):
-        super().__init__()
-        self.title("Game")
-        self.geometry(f"{self.winfo_screenwidth()}x{self.winfo_screenheight()}+0+0")
+# Button class
+class Button:
+    def __init__(self, x, y, width, height, text, font_size=30):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.text = text
+        self.font = pygame.font.SysFont("Arial", font_size)
+        self.is_hovered = False
 
-        # Configure grid to allow dynamic resizing
-        self.grid_rowconfigure(0, weight=1)  # Make row 0 expandable
-        self.grid_columnconfigure(0, weight=1)  # Make column 0 expandable
+    def draw(self, surface):
+        # Draw button background
+        pygame.draw.rect(surface, WHITE, self.rect)
+        pygame.draw.rect(surface, BLACK, self.rect, 2)  # Border
 
-        # Creates two frames: Title Screen and Pause Menu
-        self.title_screen = customtkinter.CTkFrame(self)
-        self.pause_menu = customtkinter.CTkFrame(self)
+        # Render text
+        text_surf = self.font.render(self.text, True, BLACK)
+        text_rect = text_surf.get_rect(center=self.rect.center)
+        surface.blit(text_surf, text_rect)
 
-        # Place both frames in the same grid location
-        for frame in (self.title_screen, self.pause_menu):
-            frame.grid(row=0, column=0, sticky="nsew")
+    def check_hover(self, mouse_pos):
+        self.is_hovered = self.rect.collidepoint(mouse_pos)
+        return self.is_hovered
 
-        # Build each frame
-        self.build_title_screen()
-        self.build_pause_menu()
-
-        # Show the title screen initially
-        self.show_frame(self.title_screen)
-
-    def build_title_screen(self):
-        """Builds the title screen UI."""
-        # Add background
-        current_dir = os.path.dirname(__file__)
-        size = (self.winfo_screenwidth(), self.winfo_screenheight())
-        bg_image_path = os.path.join(current_dir, "../assets/images/background.png")
-        bg_image = customtkinter.CTkImage(light_image=Image.open(bg_image_path), size=size)
+    def is_clicked(self, mouse_pos, mouse_click):
+        return self.rect.collidepoint(mouse_pos) and mouse_click
 
 
-        bg_label = customtkinter.CTkLabel(self, image=bg_image, text="")
-        bg_label.place(relx=0.5, rely=0.5, anchor="center", relwidth=1, relheight=1)
+# Main function
+def main():
+    clock = pygame.time.Clock()
+    running = True
 
-        # Add title
-        label = customtkinter.CTkLabel(self.title_screen, text="TITLE SCREEN", font=("Arial", 24))
-        label.pack(pady=20)
+    # Get title image dimensions
+    title_width = title_image.get_width()
+    title_height = title_image.get_height()
 
-        start_button = customtkinter.CTkButton(
-            self.title_screen, text="Start Game", command=lambda: self.show_frame(self.pause_menu)
-        )
-        start_button.pack(pady=10)
+    # Calculate position to center the title image
+    title_x = WIDTH // 2 - title_width // 2
+    title_y = 0
 
-    def build_pause_menu(self):
-        """Builds the pause menu UI."""
-        label = customtkinter.CTkLabel(self.pause_menu, text="PAUSE MENU", font=("Arial", 24))
-        label.pack(pady=20)
+    # Create start button
+    start_button = Button(WIDTH // 2 - 100, title_height,
+                          200, 50, "START GAME")
 
-        resume_button = customtkinter.CTkButton(
-            self.pause_menu, text="Resume Game", command=lambda: print("Game Resumed")
-        )
-        resume_button.pack(pady=10)
+    while running:
+        mouse_click = False
+        mouse_pos = pygame.mouse.get_pos()
 
-        settings_button = customtkinter.CTkButton(
-            self.pause_menu, text="Settings", command=lambda: print("Settings Opened")
-        )
-        settings_button.pack(pady=10)
+        # Event handling
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:  # Left mouse button
+                    mouse_click = True
 
-        quit_button = customtkinter.CTkButton(
-            self.pause_menu, text="Quit Game", command=lambda: self.show_frame(self.title_screen)
-        )
-        quit_button.pack(pady=10)
+        # Check button interaction
+        start_button.check_hover(mouse_pos)
+        if start_button.is_clicked(mouse_pos, mouse_click):
+            print("Game started!")  # Replace with your game start function
 
-    def show_frame(self, frame):
-        """Raises the specified frame."""
-        frame.tkraise()
+        # Fill background
+        screen.blit(background, (0, 0))
+
+        # Draw title image
+        screen.blit(title_image, (title_x, title_y))
+
+        # Draw button
+        start_button.draw(screen)
+
+        # Update display
+        pygame.display.flip()
+        clock.tick(60)
+
+    pygame.quit()
 
 
-# Run the application
 if __name__ == "__main__":
-    app = App()
-    app.mainloop()
+    main()
