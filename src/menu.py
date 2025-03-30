@@ -1,6 +1,7 @@
 import pygame
 import pygame.freetype
 import os
+#import HandGestureGame
 
 # Initialize pygame
 pygame.init()
@@ -21,6 +22,8 @@ bg_image_path = os.path.join(current_dir, "../assets/images/title_background.png
 background = pygame.image.load(bg_image_path)
 background = pygame.transform.scale(background, (WIDTH, HEIGHT))
 
+high_score_font = pygame.font.SysFont("../fonts/WildFont.ttf", 32)
+
 # Colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -31,7 +34,7 @@ class Button:
     def __init__(self, x, y, width, height, text, font_size=30):
         self.rect = pygame.Rect(x, y, width, height)
         self.text = text
-        self.font = pygame.font.SysFont("Arial", font_size)
+        self.font = pygame.font.SysFont("../fonts/WildFont.ttf", font_size)
         self.is_hovered = False
 
     def draw(self, surface):
@@ -53,7 +56,7 @@ class Button:
 
 
 # Main function
-def main():
+def main(high_score=0):
     clock = pygame.time.Clock()
     running = True
 
@@ -81,10 +84,12 @@ def main():
                 if event.button == 1:  # Left mouse button
                     mouse_click = True
 
-        # Check button interaction
+        # Start button interaction
         start_button.check_hover(mouse_pos)
         if start_button.is_clicked(mouse_pos, mouse_click):
-            print("Game started!")  # Replace with your game start function
+            print("Game")
+            #HandGestureGame.main()  # Game start function
+
 
         # Fill background
         screen.blit(background, (0, 0))
@@ -94,6 +99,11 @@ def main():
 
         # Draw button
         start_button.draw(screen)
+
+        # Render high score text
+        high_score_text = high_score_font.render(f"High Score: {high_score}", True, BLACK, WHITE)
+        high_score_rect = high_score_text.get_rect(center=(WIDTH // 2, start_button.rect.bottom + 30))
+        screen.blit(high_score_text, high_score_rect)
 
         # Update display
         pygame.display.flip()
