@@ -92,6 +92,7 @@ def draw_restart_screen(score):
     high_score = load_high_score()
     if score > high_score:
         high_score_text = font.render(f"NEW HIGH SCORE!", True, (124, 252, 0))
+        save_high_score(score)
     else:
         high_score_text = font.render(f"High Score: {high_score}", True, (255, 255, 255))
 
@@ -155,16 +156,16 @@ def main():
                     speed = 1
                     lives = 3
                     background_index = 0
-                elif event.key == pygame.K_BACKSPACE and game_over:
+                elif event.key == pygame.r and game_over:
                     # Reset game state and return to main menu
                     game_over = False
+                    running = False
                     squares = []
                     score = 0
                     speed = 1
                     lives = 3
                     background_index = 0
-                    menu.main()
-                    # TODO Add any additional reset logic here if needed
+                    menu.main(load_high_score())
             elif event.type == spawn_timer and not game_over:
                 side = random.choice(['top', 'bottom', 'left', 'right'])
                 letter = random.choice(LETTERS)
@@ -242,14 +243,14 @@ def main():
                         speed = 1
                         lives = 3
                         background_index = 0
-                    if event.key == pygame.K_SPACE:
+                    if event.key == pygame.K_BACKSPACE:
                         game_over = False
                         squares = []
                         score = 0
                         speed = 1
                         lives = 3
                         background_index = 0
-                        menu.main()
+                        menu.main(load_high_score())
 
         clock.tick(60)
 
