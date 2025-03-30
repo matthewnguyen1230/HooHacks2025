@@ -73,13 +73,15 @@ class HandGestureRecognizer:
             self.stable_frames = 0
             self.last_gesture = result
 
+        cv2.imshow("Image", img) # Show video of tracking
+        cv2.waitKey(1)
+
         if self.stable_frames >= 5:  # Require 5 stable frames
             return result
         else:
             return "Unknown"
 
-        # cv2.imshow("Image", img)
-        cv2.waitKey(1)
+
 
     def run(self):
         while True:

@@ -53,10 +53,10 @@ except Exception as e:
 
 # Scale the images to fit the game window or desired size
 background_image_scaled = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
-enemy_size = 200  # Adjusted size for scaled frames
+enemy_size = 240  # Adjusted size for scaled frames
 
 # Scale the tent image
-tent_image_scaled = pygame.transform.scale(tent_image, (300, 300))  # Larger tent image
+tent_image_scaled = pygame.transform.scale(tent_image, (350, 350))  # Larger tent image
 
 class Square:
     def __init__(self, x, y, letter, speed=0.75, frames=None):
@@ -77,19 +77,26 @@ class Square:
         else:
             # If no frames are provided, use a default image (not needed here since we're using frames)
             pass
-        letter_text = highmount_font.render(self.letter, True, (0, 0, 0))  # Black text on top of image
+        letter_text = highmount_font.render(self.letter, True, (0, 0, 0))
         letter_rect = letter_text.get_rect(center=self.rect.center)
         screen.blit(letter_text, letter_rect)
 
     def move(self):
-        if self.rect.x < WIDTH / 2:
-            self.rect.x += self.speed
-        elif self.rect.x > WIDTH / 2:
-            self.rect.x -= self.speed
-        if self.rect.y < HEIGHT / 2:
-            self.rect.y += self.speed
-        elif self.rect.y > HEIGHT / 2:
-            self.rect.y -= self.speed
+        # Calculate the direction vector towards the center
+        center_x = WIDTH // 2
+        center_y = HEIGHT // 2
+        dx = center_x - self.rect.x
+        dy = center_y - self.rect.y
+
+        # Normalize the direction vector (make it a unit vector)
+        distance = (dx ** 2 + dy ** 2) ** 0.5
+        if distance != 0:
+            dx /= distance
+            dy /= distance
+
+        # Move the square towards the center
+        self.rect.x += dx * self.speed
+        self.rect.y += dy * self.speed
 
 def draw_restart_screen(score):
     # Load game over screen background
@@ -110,6 +117,8 @@ def draw_restart_screen(score):
     screen.blit(score_text, score_rect)
     restart_text = highmount_font.render("Press Space to Restart", True, (255, 255, 255))
     restart_rect = restart_text.get_rect(center=(600, 500))
+    return_main_menu = highmount_font.render("Press Backspace to Restart", True, (255, 255, 255))
+    return_main_menu = return_main_menu.get_rect(center=(600, 600))
     screen.blit(restart_text, restart_rect)
     pygame.display.flip()
 
@@ -137,26 +146,39 @@ def main():
             elif event.type == spawn_timer and not game_over:
                 side = random.choice(['top', 'bottom', 'left', 'right'])
                 letter = random.choice(LETTERS)
+                spawn_offset = 10  # Small offset to ensure squares are not spawned exactly on the center line
+
                 if side == 'top':
+                    spawn_x = random.randint(0, WIDTH - enemy_size)
+                    spawn_y = 0 + spawn_offset  # Add offset
                     if random.random() < 0.5:
-                        square = Square(random.randint(0, WIDTH - enemy_size), 0, letter, speed, frames=bear_frames)
+                        square = Square(spawn_x, spawn_y, letter, speed, frames=bear_frames)
                     else:
-                        square = Square(random.randint(0, WIDTH - enemy_size), 0, letter, speed, frames=raccoon_frames)
+                        square = Square(spawn_x, spawn_y, letter, speed, frames=raccoon_frames)
+
                 elif side == 'bottom':
+                    spawn_x = random.randint(0, WIDTH - enemy_size)
+                    spawn_y = HEIGHT - enemy_size - spawn_offset  # Subtract offset
                     if random.random() < 0.5:
-                        square = Square(random.randint(0, WIDTH - enemy_size), HEIGHT - enemy_size, letter, speed, frames=bear_frames)
+                        square = Square(spawn_x, spawn_y, letter, speed, frames=bear_frames)
                     else:
-                        square = Square(random.randint(0, WIDTH - enemy_size), HEIGHT - enemy_size, letter, speed, frames=raccoon_frames)
+                        square = Square(spawn_x, spawn_y, letter, speed, frames=raccoon_frames)
+
                 elif side == 'left':
+                    spawn_x = 0 + spawn_offset # Add Offset
+                    spawn_y = random.randint(0, HEIGHT - enemy_size)
                     if random.random() < 0.5:
-                        square = Square(0, random.randint(0, HEIGHT - enemy_size), letter, speed, frames=bear_frames)
+                        square = Square(spawn_x, spawn_y, letter, speed, frames=bear_frames)
                     else:
-                        square = Square(0, random.randint(0, HEIGHT - enemy_size), letter, speed, frames=raccoon_frames)
+                        square = Square(spawn_x, spawn_y, letter, speed, frames=raccoon_frames)
+
                 elif side == 'right':
+                    spawn_x = WIDTH - enemy_size - spawn_offset #Subtract Offset
+                    spawn_y = random.randint(0, HEIGHT - enemy_size)
                     if random.random() < 0.5:
-                        square = Square(WIDTH - enemy_size, random.randint(0, HEIGHT - enemy_size), letter, speed, frames=bear_frames)
+                        square = Square(spawn_x, spawn_y, letter, speed, frames=bear_frames)
                     else:
-                        square = Square(WIDTH - enemy_size, random.randint(0, HEIGHT - enemy_size), letter, speed, frames=raccoon_frames)
+                        square = Square(spawn_x, spawn_y, letter, speed, frames=raccoon_frames)
                 squares.append(square)
 
         if not game_over:
@@ -200,7 +222,11 @@ def main():
                         squares = []
                         score = 0
                         speed = 1
-
+                    elif event.key == pygame.K_BACKSPACE:
+                        # TODO ADD THE MAIN MENU
+                        squares = []
+                        score = 0
+                        speed = 1
         clock.tick(60)
 
     pygame.quit()
