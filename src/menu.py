@@ -1,7 +1,7 @@
 import pygame
 import pygame.freetype
 import os
-#import HandGestureGame
+import HandGestureGame
 
 # Initialize pygame
 pygame.init()
@@ -22,7 +22,7 @@ bg_image_path = os.path.join(current_dir, "../assets/images/title_background.png
 background = pygame.image.load(bg_image_path)
 background = pygame.transform.scale(background, (WIDTH, HEIGHT))
 
-high_score_font = pygame.font.SysFont("../fonts/WildFont.ttf", 32)
+high_score_font = pygame.font.Font("../fonts/WildFont.ttf", 32)
 
 # Colors
 WHITE = (255, 255, 255)
@@ -34,7 +34,7 @@ class Button:
     def __init__(self, x, y, width, height, text, font_size=30):
         self.rect = pygame.Rect(x, y, width, height)
         self.text = text
-        self.font = pygame.font.SysFont("../fonts/WildFont.ttf", font_size)
+        self.font = pygame.font.Font("../fonts/WildFont.ttf", font_size)
         self.is_hovered = False
 
     def draw(self, surface):
@@ -88,7 +88,7 @@ def main(high_score=0):
         start_button.check_hover(mouse_pos)
         if start_button.is_clicked(mouse_pos, mouse_click):
             print("Game")
-            #HandGestureGame.main()  # Game start function
+            HandGestureGame.main()  # Game start function
 
 
         # Fill background

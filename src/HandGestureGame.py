@@ -1,6 +1,7 @@
 import pygame
 import random
 import sys
+import menu
 from HandGestureRecognizer import HandGestureRecognizer
 
 # Initialize Pygame
@@ -162,6 +163,7 @@ def main():
                     speed = 1
                     lives = 3
                     background_index = 0
+                    menu.main()
                     # TODO Add any additional reset logic here if needed
             elif event.type == spawn_timer and not game_over:
                 side = random.choice(['top', 'bottom', 'left', 'right'])
@@ -240,6 +242,14 @@ def main():
                         speed = 1
                         lives = 3
                         background_index = 0
+                    if event.key == pygame.K_SPACE:
+                        game_over = False
+                        squares = []
+                        score = 0
+                        speed = 1
+                        lives = 3
+                        background_index = 0
+                        menu.main()
 
         clock.tick(60)
 
